@@ -1,5 +1,27 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1781823986503,
+      "tag": "0000_simple_doorman",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1781824239331,
+      "tag": "0001_nostalgic_monster_badoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1781824313978,
+      "tag": "0002_even_dracula",
+      "breakpoints": true
+    }
+  ]
 }

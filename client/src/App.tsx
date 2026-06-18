@@ -4,34 +4,161 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+
+// Site público
+import Home from "./pages/public/Home";
+import CertificacaoPage from "./pages/public/CertificacaoPage";
+import ComoFunciona from "./pages/public/ComoFunciona";
+import CursosPublico from "./pages/public/CursosPublico";
+
+// Área do candidato
+import CandidatoLayout from "./pages/candidato/CandidatoLayout";
+import CandidatoDashboard from "./pages/candidato/CandidatoDashboard";
+import CandidatoDocumentos from "./pages/candidato/CandidatoDocumentos";
+import CandidatoCursos from "./pages/candidato/CandidatoCursos";
+import CandidatoInscricao from "./pages/candidato/CandidatoInscricao";
+
+// Painel admin
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminCertificacoes from "./pages/admin/AdminCertificacoes";
+import AdminCandidatos from "./pages/admin/AdminCandidatos";
+import AdminAvaliadores from "./pages/admin/AdminAvaliadores";
+import AdminBancas from "./pages/admin/AdminBancas";
+import AdminCursos from "./pages/admin/AdminCursos";
+import AdminEventos from "./pages/admin/AdminEventos";
+import AdminUsuarios from "./pages/admin/AdminUsuarios";
+
+// Painel do avaliador
+import AvaliadorLayout from "./pages/avaliador/AvaliadorLayout";
+import AvaliadorDashboard from "./pages/avaliador/AvaliadorDashboard";
+import AnaliseDocumental from "./pages/avaliador/AnaliseDocumental";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      {/* ── Site público ── */}
+      <Route path="/" component={Home} />
+      <Route path="/certificacao/:slug" component={CertificacaoPage} />
+      <Route path="/como-funciona/:slug" component={ComoFunciona} />
+      <Route path="/cursos" component={CursosPublico} />
+
+      {/* ── Área do candidato ── */}
+      <Route path="/candidato">
+        {() => (
+          <CandidatoLayout>
+            <CandidatoDashboard />
+          </CandidatoLayout>
+        )}
+      </Route>
+      <Route path="/candidato/inscricao">
+        {() => (
+          <CandidatoLayout>
+            <CandidatoInscricao />
+          </CandidatoLayout>
+        )}
+      </Route>
+      <Route path="/candidato/documentos/:candidatoId">
+        {() => (
+          <CandidatoLayout>
+            <CandidatoDocumentos />
+          </CandidatoLayout>
+        )}
+      </Route>
+      <Route path="/candidato/cursos">
+        {() => (
+          <CandidatoLayout>
+            <CandidatoCursos />
+          </CandidatoLayout>
+        )}
+      </Route>
+
+      {/* ── Painel admin ── */}
+      <Route path="/admin">
+        {() => (
+          <AdminLayout>
+            <AdminDashboard />
+          </AdminLayout>
+        )}
+      </Route>
+      <Route path="/admin/certificacoes">
+        {() => (
+          <AdminLayout>
+            <AdminCertificacoes />
+          </AdminLayout>
+        )}
+      </Route>
+      <Route path="/admin/candidatos">
+        {() => (
+          <AdminLayout>
+            <AdminCandidatos />
+          </AdminLayout>
+        )}
+      </Route>
+      <Route path="/admin/avaliadores">
+        {() => (
+          <AdminLayout>
+            <AdminAvaliadores />
+          </AdminLayout>
+        )}
+      </Route>
+      <Route path="/admin/bancas">
+        {() => (
+          <AdminLayout>
+            <AdminBancas />
+          </AdminLayout>
+        )}
+      </Route>
+      <Route path="/admin/cursos">
+        {() => (
+          <AdminLayout>
+            <AdminCursos />
+          </AdminLayout>
+        )}
+      </Route>
+      <Route path="/admin/eventos">
+        {() => (
+          <AdminLayout>
+            <AdminEventos />
+          </AdminLayout>
+        )}
+      </Route>
+      <Route path="/admin/usuarios">
+        {() => (
+          <AdminLayout>
+            <AdminUsuarios />
+          </AdminLayout>
+        )}
+      </Route>
+
+      {/* ── Painel avaliador ── */}
+      <Route path="/avaliador">
+        {() => (
+          <AvaliadorLayout>
+            <AvaliadorDashboard />
+          </AvaliadorLayout>
+        )}
+      </Route>
+      <Route path="/avaliador/analise/:atribuicaoId">
+        {() => (
+          <AvaliadorLayout>
+            <AnaliseDocumental />
+          </AvaliadorLayout>
+        )}
+      </Route>
+
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
-          <Toaster />
+          <Toaster richColors position="top-right" />
           <Router />
         </TooltipProvider>
       </ThemeProvider>
