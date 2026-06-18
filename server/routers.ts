@@ -225,9 +225,36 @@ export const appRouter = router({
         mimeType: z.string().optional(),
         tamanhoBytes: z.number().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
         const doc = await createDocumento(input);
+        await createEvento({
+          candidatoId: input.candidatoId,
+          etapa: "upload_documentos",
+          descricao: `${ctx.user.name || "Candidato"} enviou o documento: ${input.nomeDocumento}.`,
+          destinatarios: buildDestinatariosEvento(
+            "upload_documentos",
+            ctx.user.name || "Candidato",
+            ctx.user.email || "",
+            "admin@anefac.com.br"
+          ),
+          metadados: { nomeDocumento: input.nomeDocumento, tipoDocumento: input.tipoDocumento },
+        });
         return doc;
+      }),
+    getViewUrl: protectedProcedure
+      .input(z.object({ s3Key: z.string() }))
+      .query(async ({ input }) => {
+        const { ENV } = await import("./_core/env");
+        const forgeUrl = ENV.forgeApiUrl?.replace(/\/+$/, "");
+        const forgeKey = ENV.forgeApiKey;
+        if (!forgeUrl || !forgeKey) throw new Error("Storage não configurado.");
+        const presignUrl = new URL("v1/storage/presign/get", forgeUrl + "/");
+        presignUrl.searchParams.set("path", input.s3Key);
+        presignUrl.searchParams.set("expiresIn", "3600");
+        const resp = await fetch(presignUrl.toString(), { headers: { Authorization: `Bearer ${forgeKey}` } });
+        if (!resp.ok) throw new Error("Falha ao obter URL de visualização.");
+        const { url } = await resp.json() as { url: string };
+        return { url };
       }),
     analisar: avaliadorProcedure
       .input(z.object({
@@ -473,18 +500,48 @@ export const appRouter = router({
     byCandidato: protectedProcedure.input(z.object({ candidatoId: z.number() })).query(async ({ input }) =>
       getAtribuicoesDoCandidato(input.candidatoId)
     ),
+    byAvaliador: avaliadorProcedure.query(async ({ ctx }) =>
+      getAtribuicoesDoAvaliador(ctx.user.id)
+    ),
     concluirAnalise: avaliadorProcedure
       .input(z.object({
         atribuicaoId: z.number(),
+        candidatoId: z.number(),
         encaminhamento: z.enum(["caminho_a", "caminho_b", "reprovado"]),
         parecerGeral: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        // Atualiza a atribuição
         await updateAtribuicao(input.atribuicaoId, {
           encaminhamento: input.encaminhamento,
           parecerGeral: input.parecerGeral,
           status: "concluida",
           decisaoEm: new Date(),
+        });
+        // Determina a próxima etapa
+        const proximaEtapa = input.encaminhamento === "reprovado"
+          ? "encerrado"
+          : input.encaminhamento === "caminho_b"
+            ? "avaliacao_teorica"
+            : "entrevista";
+        // Atualiza etapa do candidato
+        await updateCandidato(input.candidatoId, {
+          etapaAtual: proximaEtapa as any,
+          caminho: input.encaminhamento === "caminho_a" ? "A" : input.encaminhamento === "caminho_b" ? "B" : null,
+        });
+        // Registra evento de validação documental
+        const c = await getCandidatoById(input.candidatoId);
+        await createEvento({
+          candidatoId: input.candidatoId,
+          etapa: "validacao_documental",
+          descricao: `Análise documental concluída. Encaminhamento: ${input.encaminhamento}. Próxima etapa: ${proximaEtapa}.`,
+          destinatarios: buildDestinatariosEvento(
+            "validacao_documental",
+            c?.nomeCompleto || "Candidato",
+            "",
+            "admin@anefac.com.br"
+          ),
+          metadados: { encaminhamento: input.encaminhamento, proximaEtapa, parecerGeral: input.parecerGeral },
         });
         return { success: true };
       }),

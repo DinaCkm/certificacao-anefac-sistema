@@ -1,24 +1,23 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { useAuth } from "./_core/hooks/useAuth";
+import { useEffect } from "react";
 
-// Site público
 import Home from "./pages/public/Home";
 import CertificacaoPage from "./pages/public/CertificacaoPage";
 import ComoFunciona from "./pages/public/ComoFunciona";
 import CursosPublico from "./pages/public/CursosPublico";
 
-// Área do candidato
 import CandidatoLayout from "./pages/candidato/CandidatoLayout";
 import CandidatoDashboard from "./pages/candidato/CandidatoDashboard";
 import CandidatoDocumentos from "./pages/candidato/CandidatoDocumentos";
 import CandidatoCursos from "./pages/candidato/CandidatoCursos";
 import CandidatoInscricao from "./pages/candidato/CandidatoInscricao";
 
-// Painel admin
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCertificacoes from "./pages/admin/AdminCertificacoes";
@@ -29,21 +28,38 @@ import AdminCursos from "./pages/admin/AdminCursos";
 import AdminEventos from "./pages/admin/AdminEventos";
 import AdminUsuarios from "./pages/admin/AdminUsuarios";
 
-// Painel do avaliador
 import AvaliadorLayout from "./pages/avaliador/AvaliadorLayout";
 import AvaliadorDashboard from "./pages/avaliador/AvaliadorDashboard";
 import AnaliseDocumental from "./pages/avaliador/AnaliseDocumental";
 
+function RoleRedirect() {
+  const { user, loading } = useAuth();
+  const [location, navigate] = useLocation();
+
+  useEffect(() => {
+    if (loading || !user) return;
+    if (location !== "/") return;
+    const role = (user as { role?: string }).role;
+    if (role === "admin" || role === "coordenador") {
+      navigate("/admin");
+    } else if (role === "avaliador_documental" || role === "membro_banca") {
+      navigate("/avaliador");
+    } else if (role === "candidato" || role === "user") {
+      navigate("/candidato");
+    }
+  }, [user, loading, location, navigate]);
+
+  return null;
+}
+
 function Router() {
   return (
     <Switch>
-      {/* ── Site público ── */}
       <Route path="/" component={Home} />
       <Route path="/certificacao/:slug" component={CertificacaoPage} />
       <Route path="/como-funciona/:slug" component={ComoFunciona} />
       <Route path="/cursos" component={CursosPublico} />
 
-      {/* ── Área do candidato ── */}
       <Route path="/candidato">
         {() => (
           <CandidatoLayout>
@@ -73,7 +89,6 @@ function Router() {
         )}
       </Route>
 
-      {/* ── Painel admin ── */}
       <Route path="/admin">
         {() => (
           <AdminLayout>
@@ -131,7 +146,6 @@ function Router() {
         )}
       </Route>
 
-      {/* ── Painel avaliador ── */}
       <Route path="/avaliador">
         {() => (
           <AvaliadorLayout>
@@ -159,6 +173,7 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster richColors position="top-right" />
+          <RoleRedirect />
           <Router />
         </TooltipProvider>
       </ThemeProvider>
