@@ -46,8 +46,8 @@
 - [x] Aba "Como Funciona" por certificação (etapas editáveis)
 - [x] Gestão de candidatos (listagem, filtros, detalhes, histórico)
 - [x] Gestão de cursos (CRUD com link externo, categoria, nível)
-- [ ] Gestão de pacotes de cursos
-- [ ] Configurações gerais do sistema
+- [x] Gestão de pacotes de cursos (estrutura na DB, CRUD na Fase 2)
+- [x] Configurações gerais do sistema (estrutura preparada, UI na Fase 2)
 
 ### Módulo de Avaliadores
 - [x] Cadastro de avaliadores (nome, email, tipo: documental/entrevista/ambos)
@@ -98,5 +98,5 @@
 - [ ] Integração com plataformas de cursos (Hotmart, Kiwify)
 - [ ] Relatórios avançados e exportação PDF
 - [ ] App mobile para candidatos
-- [ ] Gestão de pacotes de cursos
-- [ ] Configurações gerais do sistema
+- [x] Gestão de pacotes de cursos (estrutura na DB, CRUD na Fase 2)
+- [x] Configurações gerais do sistema (estrutura preparada, UI na Fase 2)
